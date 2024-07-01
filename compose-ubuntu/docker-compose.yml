@@ -13,6 +13,8 @@ services:
   db:
     image: postgres:latest
     restart: always
+    networks:
+      - sonarnet
     environment:
       - POSTGRES_PASSWORD=teamcity_password
       - POSTGRES_USER=teamcity_user
@@ -25,6 +27,9 @@ services:
 
   teamcity:
     image: jetbrains/teamcity-server:${TEAMCITY_VERSION}
+    restart: always
+    networks:
+      - sonarnet
     ports:
       - "8112:8111"
     volumes:
@@ -36,6 +41,8 @@ services:
 
   teamcity-agent-1:
     image: jetbrains/teamcity-agent:${TEAMCITY_VERSION}-linux-sudo
+    networks:
+      - sonarnet
     privileged: true
     volumes:
       - ./agents/agent-1/conf:/data/teamcity_agent/conf
@@ -43,8 +50,13 @@ services:
       - DOCKER_IN_DOCKER=start
   teamcity-agent-2:
     image: jetbrains/teamcity-agent:${TEAMCITY_VERSION}-linux-sudo
+    networks:
+      - sonarnet
     privileged: true
     volumes:
       - ./agents/agent-2/conf:/data/teamcity_agent/conf
     environment:
       - DOCKER_IN_DOCKER=start
+networks:
+  sonarnet:
+    driver: bridge
