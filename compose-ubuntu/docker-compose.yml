@@ -23,7 +23,7 @@ services:
       - PG_DATA=/var/lib/postgresql/data
   
     volumes:
-      - ./buildserver_pgdata:/var/lib/postgresql/data
+      - buildserver_pgdata:/var/lib/postgresql/data
 
     ports:
       - 5433:5432
@@ -84,3 +84,4 @@ networks:
 volumes:
  teamcity-data:
  teamcity-logs:
+ buildserver_pgdata:
