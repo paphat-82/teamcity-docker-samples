@@ -1,7 +1,3 @@
-version: '3.1'
-
-
-# Default ${TEAMCITY_VERSION} is defined in .env file
 
 # ./buildserver_pgdata - Posgres DB data
 # ./data_dir - TeamCity data directory
@@ -11,36 +7,56 @@ version: '3.1'
 
 services:
   db:
-    image: postgres:latest
+    image: postgres:${VERSION}
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     networks:
       - sonarnet
     environment:
-      - POSTGRES_PASSWORD=teamcity_password
-      - POSTGRES_USER=teamcity_user
-      - POSTGRES_DB=teamcity_db
+      - POSTGRES_PASSWORD=${PASSWORD}
+      - POSTGRES_USER=${USERNAME}
+      - POSTGRES_DB=${DATABASE}
       - PG_DATA=/var/lib/postgresql/data
+  
     volumes:
       - ./buildserver_pgdata:/var/lib/postgresql/data
+
     ports:
       - 5433:5432
-
+ 
   teamcity:
     image: jetbrains/teamcity-server:${TEAMCITY_VERSION}
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     networks:
       - sonarnet
+  
     ports:
       - "8112:8111"
     volumes:
-      - ./data:/data/teamcity_server/datadir
-      - ./logs:/opt/teamcity/logs
-
+    # - ./data:/data/teamcity_server/datadir
+    # - ./logs:/opt/teamcity/logs
+      - teamcity-data:/data/teamcity_server/datadir
+      - teamcity-logs:/opt/teamcity/logs
+  
     depends_on:
       - db
 
   teamcity-agent-1:
     image: jetbrains/teamcity-agent:${TEAMCITY_VERSION}-linux-sudo
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     networks:
       - sonarnet
     privileged: true
@@ -50,6 +66,11 @@ services:
       - DOCKER_IN_DOCKER=start
   teamcity-agent-2:
     image: jetbrains/teamcity-agent:${TEAMCITY_VERSION}-linux-sudo
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     networks:
       - sonarnet
     privileged: true
@@ -60,3 +81,6 @@ services:
 networks:
   sonarnet:
     driver: bridge
+volumes:
+ teamcity-data:
+ teamcity-logs:

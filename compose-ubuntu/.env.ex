@@ -1,4 +1,4 @@
-TEAMCITY_VERSION=2024.03.3
+TEAMCITY_VERSION=2023.05.3
 USERNAME=teamcity_user
 PASSWORD=teamcity_password
 DATABASE=teamcity_db

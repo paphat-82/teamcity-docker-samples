@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  teamcity-server:
+    image: jetbrains/teamcity-server:${TEAMCITY_VERSION}
+    container_name: teamcity-server
+    ports:
+      - "8112:8111"
+    volumes:
+      - teamcity-server-data:/data/teamcity_server/datadir
+    environment:
+      - TEAMCITY_SERVER_MEM_OPTS=-Xmx2g -XX:ReservedCodeCacheSize=350m -XX:+UseConcMarkSweepGC -XX:SoftRefLRUPolicyMSPerMB=50 -XX:CICompilerCount=2 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/teamcity_server/datadir/java_pid.hprof
+    depends_on:
+      - teamcity-db
+
+  teamcity-db:
+    image: postgres:${VERSION}
+    container_name: teamcity-db
+    environment:
+       - POSTGRES_PASSWORD=${PASSWORD}
+       - POSTGRES_USER=${USERNAME}
+       - POSTGRES_DB=${DATABASE}
+       - PG_DATA=/var/lib/postgresql/data
+    volumes:
+      - teamcity-db-data:/var/lib/postgresql/data
+
+  teamcity-agent-0:
+    image: jetbrains/teamcity-agent:${TEAMCITY_VERSION}-linux-sudo
+    container_name: teamcity-agent-0
+    environment:
+      - SERVER_URL=http://teamcity-server:8111
+    depends_on:
+      - teamcity-server
+
+  teamcity-agent-1:
+    image: jetbrains/teamcity-agent:${TEAMCITY_VERSION}-linux-sudo
+    container_name: teamcity-agent-1
+    environment:
+      - SERVER_URL=http://teamcity-server:8111
+    depends_on:
+      - teamcity-server
+
+volumes:
+  teamcity-server-data:
+  teamcity-db-data:
